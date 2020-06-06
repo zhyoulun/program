@@ -1,1 +1,1 @@
-program
+dig endlessly
