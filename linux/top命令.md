@@ -1,4 +1,4 @@
-## TASK and CPU stats
+## TASK and CPU states
 
 示例：
 
@@ -41,11 +41,15 @@
 其中字段解释如下：
 
 - a) is the combined `us` and `ni` percentage; 
+  - us+ni
 - b) is the `sy` percentage; 
-- c) is the total(of a and b);
+  - sy
+- c) is the total;
+  - a和b的和
 - d) is one of two visual graphs of those representations.
+  - 图形化展示
 
-## `us` vs `ni`
+### `us` vs `ni`
 
 us和ni分别代表un-niced user processes和niced user processes的运行时间。
 
@@ -63,12 +67,37 @@ nice值可以在top命令中查看：
 
 PR代表进程的调度优先级。
 
+## MEMORY Usage
+
+示例：
+
+![](/static/images/2006/p005.png)
+
+可以使用快捷键E调整单位，范围是（KiB->EiB）。
+
+默认情况下，第1行显示了物理内存，分类是：total, free, used, buff/cache
+
+第2行显示了大部分虚拟内存，分类是：total, free, used. avail(这里指可用的物理内存)
+
+第二行的`avail`数值是可用物理内存的估计值，它可用于启动一个新的应用，不包含swapping。和`free`不一样的是，it attempts to account for readily reclaimable page cache and memory slabs。
+
+快捷键m可以切换到另外一种展示形式：
+
+            a    b          c
+GiB Mem : 18.7/15.738   [ ...
+GiB Swap:  0.0/7.999    [ ...
+
+- a) is the percentage used; 
+  - 使用量(total-avail)
+- b) is the total available;
+  - 总的可用量
+- c) is one of two visual graphs of those representations.
+  - 图形化展示
 
 
 
 
-
-
+ 
 ## 参考
 
 - [https://www.man7.org/linux/man-pages/man1/top.1.html](https://www.man7.org/linux/man-pages/man1/top.1.html)
