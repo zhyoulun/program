@@ -139,7 +139,7 @@ def
 def
 ```
 
-## 提升服务健壮性
+## 提升服务端健壮性
 
 ### 僵尸进程
 
@@ -173,3 +173,218 @@ void sig_chld(int signo)
     }
 }
 ```
+
+### 使用select改造服务端，不使用子进程
+
+```c
+#include "unp.h"
+
+int main(int argc, char **argv)
+{
+    int listenfd, connfd;
+    pid_t childpid;
+    socklen_t clilen;
+    struct sockaddr_in in_cliaddr, servaddr;
+
+    int maxi, maxfd;
+    int n;
+    int i;
+    int client[FD_SETSIZE];
+    int nready;
+    fd_set rset, allset;
+
+    char buf[MAXLINE];
+
+    listenfd = Socket(AF_INET, SOCK_STREAM, 0);
+
+    bzero(&servaddr, sizeof(servaddr));
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    servaddr.sin_port = htons(SERV_PORT);
+
+    Bind(listenfd, (SA *)&servaddr, sizeof(servaddr));
+    Listen(listenfd, LISTENQ);
+
+    maxfd = listenfd;
+    maxi = -1;
+    for (i = 0; i < FD_SETSIZE; i++)
+    {
+        client[i] = -1;
+    }
+    FD_ZERO(&allset);
+    FD_SET(listenfd, &allset);
+
+    for (;;)
+    {
+        rset = allset;
+        nready = Select(maxfd + 1, &rset, NULL, NULL, NULL);
+        if (FD_ISSET(listenfd, &rset))
+        {
+            clilen = sizeof(in_cliaddr);
+            connfd = Accept(listenfd, (SA *)&in_cliaddr, &clilen);
+            for (i = 0; i < FD_SETSIZE; i++)
+            {
+                if (client[i] == -1)
+                {
+                    client[i] = connfd;
+                    break;
+                }
+            }
+            if (i == FD_SETSIZE)
+            {
+                err_quit("too many clients");
+            }
+            FD_SET(connfd, &allset);
+            if (connfd > maxfd)
+            {
+                maxfd = connfd;
+            }
+            if (i > maxi)
+            {
+                maxi = i;
+            }
+            nready--;
+            if (nready <= 0)
+            {
+                continue;
+            }
+        }
+
+        for (i = 0; i < FD_SETSIZE; i++)
+        {
+            if ((connfd = client[i]) < 0)
+            {
+                continue;
+            }
+            if (FD_ISSET(connfd, &rset))
+            {
+                if ((n = Read(connfd, buf, MAXLINE)) == 0)
+                {
+                    Close(connfd);
+                    FD_CLR(connfd, &allset);
+                    client[i] = -1;
+                }
+                else
+                {
+                    Writen(connfd, buf, n);
+                }
+                nready--;
+                if (nready <= 0)
+                {
+                    break;
+                }
+            }
+        }
+    }
+}
+```
+
+![](/static/images/2006/p032.png)
+
+## 提升客户端健壮性
+
+### 服务器进程异常终止，客户端阻塞在fgets调用上
+
+> 这里需要区分服务器进程崩溃，以及服务器主机崩溃
+
+复现步骤：
+
+1. 在同一个主机上，启动服务端，客户端
+2. 在客户端上输入一行文本，验证正常
+3. 杀死服务端子进程：作为进程终止处理的部分工作，子进程中所有打开着的描述符都被关闭。这就导致向客户端发送一个FIN，而客户端TCP则相应一个ACK。这是TCP终止连接工作的前半部分
+  ![](/static/images/2006/p029.png)
+4. 然而这时客户端进程阻塞在fgets调用上，等待从stdin接收一行文本
+5. 这时，我们可以在客户端上输入一行文本，str_cli调用writen，客户端TCP接着把数据发送给服务器，TCP允许这么做，因为客户端不知道服务端关闭连接
+6. 服务端接收到来自客户端的数据时，响应RST
+7. 然而客户端看不到这个RST，因为它在调用writen之后立即调用readline，并且由于客户端接收到了FIN，所以调用readline的时候会立即返回0
+
+使用select解决该问题
+
+```c
+void str_cli(FILE *fp, int connfd)
+{
+    char sendline[MAXLINE], recvline[MAXLINE];
+    int maxfdp1 = max(fileno(fp), connfd) + 1;
+    fd_set rset;
+
+    FD_ZERO(&rset);
+    while (1)
+    {
+        FD_SET(fileno(fp), &rset);
+        FD_SET(connfd, &rset);
+        Select(maxfdp1, &rset, NULL, NULL, NULL);
+
+        if (FD_ISSET(connfd, &rset))
+        {
+            if (Readline(connfd, recvline, MAXLINE) == 0)//socket is readable
+            {
+                err_quit("str_cli: server terminated permaturely");
+            }
+            Fputs(recvline, stdout);
+        }
+
+        if (FD_ISSET(fileno(fp), &rset))
+        {
+            if (Fgets(sendline, MAXLINE, fp) == NULL)//input is readable
+            {
+                write(stdout, "Fgets EOF\n", 10);
+                return;
+            }
+            Writen(connfd, sendline, strlen(sendline));
+        }
+    }
+}
+```
+
+### 使用shutdown解决响应不完整问题
+
+![](/static/images/2006/p030.png)
+
+```c
+void str_cli(FILE *fp, int connfd)
+{
+    char buf[MAXLINE];
+    int maxfdp1 = max(fileno(fp), connfd) + 1;
+    fd_set rset;
+    int stdineof = 0;
+    int n;
+
+    FD_ZERO(&rset);
+    while (1)
+    {
+        if (stdineof == 0)
+            FD_SET(fileno(fp), &rset);
+        FD_SET(connfd, &rset);
+        Select(maxfdp1, &rset, NULL, NULL, NULL);
+
+        if (FD_ISSET(connfd, &rset))
+        {
+            if ((n = Read(connfd, buf, MAXLINE)) == 0) //socket is readable
+            {
+                if (stdineof == 1)
+                    return; //normal terminated
+                else
+                    err_quit("str_cli: server terminated permaturely");
+            }
+            Writen(fileno(stdout), buf, n);
+        }
+
+        if (FD_ISSET(fileno(fp), &rset))
+        {
+            if ((n = Read(fileno(fp), buf, MAXLINE)) == 0) //input is readable
+            {
+                stdineof = 1;
+                Shutdown(connfd, SHUT_WR); //send FIN
+                FD_CLR(fileno(fp), &rset);
+                write(stdout, "Fgets EOF\n", 10);
+                continue;
+            }
+            Writen(connfd, buf, n);
+        }
+    }
+}
+```
+
+这时就能保证每次都能得到完整的输出
+
+![](/static/images/2006/p031.png)
