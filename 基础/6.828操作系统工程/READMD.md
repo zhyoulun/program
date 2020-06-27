@@ -1,0 +1,7 @@
+- [主页2019](https://pdos.csail.mit.edu/6.828/2019/schedule.html)
+- [xv6 book 2019](https://pdos.csail.mit.edu/6.828/2019/xv6/book-riscv-rev0.pdf)
+  - [xv6 book中文 2012](https://zhyoulun.gitbook.io/xv6-chinese/)
+- [xv6 source 2019](https://github.com/mit-pdos/xv6-riscv-fall19)
+  - [xv6 source fork](https://github.com/zhyoulun/xv6-riscv-fall19)
+- [video lectures(4~18)](https://www.youtube.com/playlist?list=PLfciLKR3SgqNJKKIKUliWoNBBH1VHL3AP)
+- [Tools Used in 6.828 2019](https://pdos.csail.mit.edu/6.828/2019/tools.html)
