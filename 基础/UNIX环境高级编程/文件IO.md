@@ -20,7 +20,7 @@
 - O_NOFOLLOW：如果path引用的是一个符号链接，则出错
 - O_NONBLOCK：如果path引用的是一个FIFO，一个块特殊文件或者一个字符特殊文件，则此选项为文件的本次打开操作和后续的IO操作设置为非阻塞方式
 - O_NDELAY：废弃
-- O_SYNC：???
+- O_SYNC：每次write都要等待，直至数据已写到磁盘上再返回；在unix 系统中，通常write只是将数据排入队列，而实际的写磁盘操作则可能是在以后的某个时刻进行
 - O_TRUNC：如果文件存在，而且为只写或者读写成功打开，则将长度截断为0
 - O_TTY_INIT：???
 - O_DSYNC：???
@@ -115,6 +115,11 @@ fcntl函数有以下五种功能：
 3. 获取/设置文件状态标志（cmd=F_GETFL，F_SETFL）
 4. 获取/设置异步I/O所有权（cmd=F_GETOWN，F_SETOWN）
 5. 获取/设置记录锁（cmd=F_GETLK，F_SETLK，F_SETLKW）
+
+> 对于文件描述标志：当前只定义了一个，FD_CLOSEXEC；
+> 
+> 对于文件状态标志：如下表所示：
+> ![](/static/images/2007/p001.png)
 
 ### F_DUPFD
 
