@@ -278,7 +278,39 @@ $ go run https002.go
 hello
 ```
 
+## 使用curl访问
+
+> 不太理解这里生成的cacrt.pem和上边用到的ca.crt是什么关系
+
+```bash
+echo quit | openssl s_client -showcerts -servername www.example.com -connect www.example.com:443 > cacrt.pem
+```
+
+```
+$ curl -i --cacert cacrt.pem "https://www.example.com"
+HTTP/1.1 200 OK
+Date: Sun, 05 Jul 2020 09:43:07 GMT
+Content-Length: 5
+Content-Type: text/plain; charset=utf-8
+
+hello
+
+
+
+
+$ curl -i "https://www.example.com"
+curl: (60) SSL certificate problem: self signed certificate
+More details here: https://curl.haxx.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+```
+
+
+
 ## 参考
 
 - [Go和HTTPS](https://tonybai.com/2015/04/30/go-and-https/)
 - [使用Go实现TLS 服务器和客户端](https://colobu.com/2016/06/07/simple-golang-tls-examples/)
+- [Use self signed certificate with cURL?](https://stackoverflow.com/questions/27611193/use-self-signed-certificate-with-curl)
