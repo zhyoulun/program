@@ -7,10 +7,6 @@
 - macOS Catalina 10.15.7
 - Xcode 12.0.1
 
-![](/static/images/2010/p015.png)
-
-![](/static/images/2010/p014.png)
-
 ### 导入头文件
 
 ![](/static/images/2010/p010.png)
