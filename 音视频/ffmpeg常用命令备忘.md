@@ -138,6 +138,21 @@ scale=w=iw/2:h=ih/2 # 宽高分别缩小一半
 ffmpeg -i input.mkv -c copy -movflags +faststart output.mp4
 ```
 
+示例
+
+```bash
+➜  temp mp4info 1.mp4
+File:
+  major brand:      isom
+  minor version:    200
+  compatible brand: isom
+  compatible brand: iso2
+  compatible brand: avc1
+  compatible brand: mp41
+  fast start:       yes
+...
+```
+
 ## 帮助
 
 **列出支持的所有格式**
