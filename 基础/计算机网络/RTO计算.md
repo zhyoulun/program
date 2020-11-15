@@ -4,7 +4,7 @@
 
 RFC793中估算平均RTT算法是如下估算器的最简单的一个例子：recursive prediction error，或者stochastic gradient。
 
-给定一个新的RTT测量M，TCP更新平均RTT A：
+给定一个新的RTT测量$M$，TCP更新平均RTT$A$：
 
 $$
 A=(1-g)A+gM
