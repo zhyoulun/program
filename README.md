@@ -1,4 +1,6 @@
-dig endlessly
+- dig endlessly
+- 多看规范
+
 
 ## 公共参考资料
 
