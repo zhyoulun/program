@@ -9,3 +9,5 @@ dig endlessly
 - C程序设计语言，K&R
 - FFmpeg从入门到精通，刘歧
 - 数字图像处理与Python实现，岳亚伟
+- Docker 技术入门与实战，https://yeasy.gitbook.io/docker_practice/
+
