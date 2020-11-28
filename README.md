@@ -1,4 +1,12 @@
-dig endlessly
+- dig endlessly
+- 多看规范
+
+## 数学公式
+
+在chrome安装如下插件
+
+https://chrome.google.com/webstore/detail/mathjax-plugin-for-github/ioemnmodlmafdkllaclgeombjnmnbima
+
 
 ## 公共参考资料
 
