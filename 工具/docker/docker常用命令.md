@@ -33,6 +33,12 @@ docker-compose down
 docker-compose up && docker-compose rm -fsv
 ```
 
+## 待整理
+
+docker run -it --privileged -d --rm --name a2 -p 5050:5050 docker-mesos-1.11.0 /bin/bash
+
+
+
 
 ## 参考
 
