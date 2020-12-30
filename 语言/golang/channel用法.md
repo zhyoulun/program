@@ -5,4 +5,4 @@
 
 ## 参考
 
-- [golang channel 使用总结](https://bits.bytedance.net/meego/)
+- [golang channel 使用总结]()
