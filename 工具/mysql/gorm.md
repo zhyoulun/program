@@ -1,0 +1,2 @@
+- https://gorm.io/docs/security.html
+- https://gorm.io/docs/sql_builder.html

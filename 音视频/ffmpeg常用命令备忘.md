@@ -74,6 +74,22 @@ ffmpeg -i input.mp4 -ss 00:00:40.0 -t 20 -c copy output.mp4
 ffmpeg -i input.mp4 -t 00:00:40.0 -c copy output1.mp4 -ss 00:00:40.0  -c copy output2.mp4
 ```
 
+## 给视频增加时间进度水印
+
+通过 drawtext 滤镜模块给视频添加时间水印，文档：https://ffmpeg.org/ffmpeg-filters.html#drawtext-1
+
+```
+ffmpeg -i input.mp4 -vf "drawtext=fontsize=80:fontcolor=White:x=(w-tw)/2:y=th:text='%{pts\:hms}'" -c:v libx264 -c:a copy -f mp4 -y output.mp4
+```
+
+- fontsize：字符大小，默认值16
+- x，y：The expressions which specify the offsets where text will be drawn within the video frame
+- tw，th：the width/height of the rendered text
+- text：The text string to be drawn. The text must be a sequence of UTF-8 encoded characters. This parameter is mandatory if no file is specified with the parameter textfile.
+- -f fmt (input/output)
+  - Force input or output file format. The format is normally auto detected for input files and guessed from the file extension for output files, so this option is not needed in most cases.
+
+
 ## 合并视频文件
 
 **使用concat demuxer合并相同编码的文件**
@@ -287,3 +303,4 @@ Filters:
 - [Any downsides to always using the -movflags faststart parameter?](https://superuser.com/questions/856025/any-downsides-to-always-using-the-movflags-faststart-parameter)
 - [和-movflags +faststart一起咬文嚼字](https://blog.csdn.net/liuzehn/article/details/105639620)
 - [MP4文件结构解析](https://blog.csdn.net/qq_25333681/article/details/93144167)
+- [ffmpeg给视频添加时间水印](https://blog.csdn.net/ternence_hsu/article/details/102540626)
