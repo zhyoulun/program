@@ -1,0 +1,23 @@
+version: "3.7"
+services:
+  debug:
+    build: ./debug
+    privileged: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+  docker-in-docker:
+    build: ./docker-in-docker
+    privileged: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+  k8s-master:
+    build: ./k8s-master
+    privileged: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - ./k8s-master/docker-daemon.json:/etc/docker/daemon.json
+      # - ./k8s-master/bridge-nf-call-iptables:/proc/sys/net/bridge/bridge-nf-call-iptables
+    # deploy:
+    #   resources:
+    #     limits:
+    #       memory: 1G

@@ -1,0 +1,9 @@
+{
+    "experimental": false,
+    "features": {
+        "buildkit": true
+    },
+    "registry-mirrors": [
+        "https://ustc-edu-cn.mirror.aliyuncs.com"
+    ]
+}
