@@ -189,6 +189,92 @@ func main() {
 
 必须要带port信息
 
+## 基于HTTP CONNECT正向代理和echo server交互
+
+echo server代码参考[文章](/基础/计算机网络/golang%20echo.md)
+
+```go
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"log"
+	"net"
+	"net/http"
+	"net/url"
+)
+
+func createConn(urlString, proxyString string) (net.Conn, error) {
+	u, _ := url.Parse(urlString)
+	req := &http.Request{
+		Method: http.MethodConnect,
+		URL:    u,
+		Host:   u.Host,
+	}
+
+	conn, err := net.Dial("tcp", proxyString)
+	if err != nil {
+		return nil, err
+	}
+
+	err = req.Write(conn)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := http.ReadResponse(bufio.NewReader(conn), req)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("resp StatusCode err: %d", resp.StatusCode)
+	}
+	return conn, nil
+}
+
+func main() {
+	url := "http://127.0.0.1:12345"
+	proxy := "127.0.0.1:3128"
+
+	// connect
+	conn, err := createConn(url, proxy)
+	if err != nil {
+		log.Fatalf("createConn err: %+v", err)
+	}
+
+	// write
+	text := []byte(`hello`)
+	_, err = conn.Write(text)
+	if err != nil {
+		log.Fatalf("conn Write err: %+v", err)
+	}
+
+	// read
+	buf := make([]byte, 1024)
+	n, err := conn.Read(buf)
+	if err != nil {
+		log.Fatalf("conn Write err: %+v", err)
+	}
+	log.Printf("read content: %s", string(buf[:n]))
+}
+```
+
+echo server log:
+
+```
+2021/02/06 23:25:20 a new conn, local addr: 127.0.0.1:12345,remote addr: 127.0.0.1:60705
+2021/02/06 23:25:20 read: [104 101 108 108 111], len: 5
+2021/02/06 23:25:20 write: [104 101 108 108 111], len: 5
+2021/02/06 23:25:20 conn Read err: EOF
+```
+
+client log:
+
+```
+2021/02/06 23:25:20 read content: hello
+```
+
 ## 参考
 
 - [使用 NGINX 作为 HTTPS 正向代理服务器](https://www.infoq.cn/article/taujwgln6d_6qls6yj6s)
