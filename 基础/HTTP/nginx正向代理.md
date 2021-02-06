@@ -1,5 +1,193 @@
+## HTTP CONNECT代理
 
+使用带有ngx_http_proxy_connect_module的nginx:https://github.com/zhyoulun/build/tree/master/nginx
 
+配置文件
+
+```
+server {
+    listen                         3128;
+
+    # dns resolver used by forward proxying
+    resolver                       8.8.8.8;
+
+    # forward proxy for CONNECT request
+    proxy_connect;
+    proxy_connect_allow            all;
+    proxy_connect_connect_timeout  10s;
+    proxy_connect_read_timeout     10s;
+    proxy_connect_send_timeout     10s;
+    proxy_connect_response "HTTP/1.1 200 Connection Established\r\nProxy-agent: nginx\r\nX-Proxy-Connected-Addr: $connect_addr\r\n\r\n";
+
+    # forward proxy for non-CONNECT request
+    location / {
+        # return 404;
+        proxy_pass http://$host;
+        proxy_set_header Host $host;
+    }
+}
+```
+
+测试https，使用了connect
+
+```
+➜  nginx git:(master) ✗ curl https://www.baidu.com/ -v -x 127.0.0.1:3128
+*   Trying 127.0.0.1...
+* TCP_NODELAY set
+* Connected to 127.0.0.1 (127.0.0.1) port 3128 (#0)
+* allocate connect buffer!
+* Establish HTTP proxy tunnel to www.baidu.com:443
+> CONNECT www.baidu.com:443 HTTP/1.1
+> Host: www.baidu.com:443
+> User-Agent: curl/7.64.1
+> Proxy-Connection: Keep-Alive
+>
+< HTTP/1.1 200 Connection Established
+< Proxy-agent: nginx
+< X-Proxy-Connected-Addr: 104.193.88.77:443
+<
+* Proxy replied 200 to CONNECT request
+* CONNECT phase completed!
+* ALPN, offering h2
+* ALPN, offering http/1.1
+* successfully set certificate verify locations:
+*   CAfile: /etc/ssl/cert.pem
+  CApath: none
+* TLSv1.2 (OUT), TLS handshake, Client hello (1):
+* CONNECT phase completed!
+* CONNECT phase completed!
+* TLSv1.2 (IN), TLS handshake, Server hello (2):
+* TLSv1.2 (IN), TLS handshake, Certificate (11):
+* TLSv1.2 (IN), TLS handshake, Server key exchange (12):
+* TLSv1.2 (IN), TLS handshake, Server finished (14):
+* TLSv1.2 (OUT), TLS handshake, Client key exchange (16):
+* TLSv1.2 (OUT), TLS change cipher, Change cipher spec (1):
+* TLSv1.2 (OUT), TLS handshake, Finished (20):
+* TLSv1.2 (IN), TLS change cipher, Change cipher spec (1):
+* TLSv1.2 (IN), TLS handshake, Finished (20):
+* SSL connection using TLSv1.2 / ECDHE-RSA-AES128-GCM-SHA256
+* ALPN, server accepted to use http/1.1
+* Server certificate:
+*  subject: C=CN; ST=beijing; L=beijing; OU=service operation department; O=Beijing Baidu Netcom Science Technology Co., Ltd; CN=baidu.com
+*  start date: Apr  2 07:04:58 2020 GMT
+*  expire date: Jul 26 05:31:02 2021 GMT
+*  subjectAltName: host "www.baidu.com" matched cert's "*.baidu.com"
+*  issuer: C=BE; O=GlobalSign nv-sa; CN=GlobalSign Organization Validation CA - SHA256 - G2
+*  SSL certificate verify ok.
+> GET / HTTP/1.1
+> Host: www.baidu.com
+> User-Agent: curl/7.64.1
+> Accept: */*
+>
+< HTTP/1.1 200 OK
+< Accept-Ranges: bytes
+< Cache-Control: private, no-cache, no-store, proxy-revalidate, no-transform
+< Connection: keep-alive
+< Content-Length: 2443
+< Content-Type: text/html
+< Date: Sat, 06 Feb 2021 11:50:51 GMT
+< Etag: "58860411-98b"
+< Last-Modified: Mon, 23 Jan 2017 13:24:33 GMT
+< Pragma: no-cache
+< Server: bfe/1.0.8.18
+< Set-Cookie: BDORZ=27315; max-age=86400; domain=.baidu.com; path=/
+<
+<!DOCTYPE html>
+<!--STATUS OK--><html> <head><meta http-equiv=content-type content=text/html;charset=utf-8><meta http-equiv=X-UA-Compatible content=IE=Edge><meta content=always name=referrer><link rel=stylesheet type=text/css href=https://ss1.bdstatic.com/5eN1bjq8AAUYm2zgoY3K/r/www/cache/bdorz/baidu.min.css><title>百度一下，你就知道</title></head> <body link=#0000cc> <div id=wrapper> <div id=head> <div class=head_wrapper> <div class=s_form> <div class=s_form_wrapper> <div id=lg> <img hidefocus=true src=//www.baidu.com/img/bd_logo1.png width=270 height=129> </div> <form id=form name=f action=//www.baidu.com/s class=fm> <input type=hidden name=bdorz_come value=1> <input type=hidden name=ie value=utf-8> <input type=hidden name=f value=8> <input type=hidden name=rsv_bp value=1> <input type=hidden name=rsv_idx value=1> <input type=hidden name=tn value=baidu><span class="bg s_ipt_wr"><input id=kw name=wd class=s_ipt value maxlength=255 autocomplete=off autofocus=autofocus></span><span class="bg s_btn_wr"><input type=submit id=su value=百度一下 class="bg s_btn" autofocus></span> </form> </div> </div> <div id=u1> <a href=http://news.baidu.com name=tj_trnews class=mnav>新闻</a> <a href=https://www.hao123.com name=tj_trhao123 class=mnav>hao123</a> <a href=http://map.baidu.com name=tj_trmap class=mnav>地图</a> <a href=http://v.baidu.com name=tj_trvideo class=mnav>视频</a> <a href=http://tieba.baidu.com name=tj_trtieba class=mnav>贴吧</a> <noscript> <a href=http://www.baidu.com/bdorz/login.gif?login&amp;tpl=mn&amp;u=http%3A%2F%2Fwww.baidu.com%2f%3fbdorz_come%3d1 name=tj_login class=lb>登录</a> </noscript> <script>document.write('<a href="http://www.baidu.com/bdorz/login.gif?login&tpl=mn&u='+ encodeURIComponent(window.location.href+ (window.location.search === "" ? "?" : "&")+ "bdorz_come=1")+ '" name="tj_login" class="lb">登录</a>');
+                </script> <a href=//www.baidu.com/more/ name=tj_briicon class=bri style="display: block;">更多产品</a> </div> </div> </div> <div id=ftCon> <div id=ftConw> <p id=lh> <a href=http://home.baidu.com>关于百度</a> <a href=http://ir.baidu.com>About Baidu</a> </p> <p id=cp>&copy;2017&nbsp;Baidu&nbsp;<a href=http://www.baidu.com/duty/>使用百度前必读</a>&nbsp; <a href=http://jianyi.baidu.com/ class=cp-feedback>意见反馈</a>&nbsp;京ICP证030173号&nbsp; <img src=//www.baidu.com/img/gs.gif> </p> </div> </div> </div> </body> </html>
+* Connection #0 to host 127.0.0.1 left intact
+* Closing connection 0
+```
+
+测试http，没有使用connect（可能是curl做优化了）
+
+```
+➜  nginx git:(master) ✗ curl http://www.baidu.com/ -v -x 127.0.0.1:3128
+*   Trying 127.0.0.1...
+* TCP_NODELAY set
+* Connected to 127.0.0.1 (127.0.0.1) port 3128 (#0)
+> GET http://www.baidu.com/ HTTP/1.1
+> Host: www.baidu.com
+> User-Agent: curl/7.64.1
+> Accept: */*
+> Proxy-Connection: Keep-Alive
+>
+< HTTP/1.1 200 OK
+< Server: nginx/1.18.0
+< Date: Sat, 06 Feb 2021 11:50:29 GMT
+< Content-Type: text/html
+< Content-Length: 2381
+< Connection: keep-alive
+< Accept-Ranges: bytes
+< Cache-Control: private, no-cache, no-store, proxy-revalidate, no-transform
+< Etag: "588604eb-94d"
+< Last-Modified: Mon, 23 Jan 2017 13:28:11 GMT
+< Pragma: no-cache
+< Set-Cookie: BDORZ=27315; max-age=86400; domain=.baidu.com; path=/
+<
+<!DOCTYPE html>
+<!--STATUS OK--><html> <head><meta http-equiv=content-type content=text/html;charset=utf-8><meta http-equiv=X-UA-Compatible content=IE=Edge><meta content=always name=referrer><link rel=stylesheet type=text/css href=http://s1.bdstatic.com/r/www/cache/bdorz/baidu.min.css><title>百度一下，你就知道</title></head> <body link=#0000cc> <div id=wrapper> <div id=head> <div class=head_wrapper> <div class=s_form> <div class=s_form_wrapper> <div id=lg> <img hidefocus=true src=//www.baidu.com/img/bd_logo1.png width=270 height=129> </div> <form id=form name=f action=//www.baidu.com/s class=fm> <input type=hidden name=bdorz_come value=1> <input type=hidden name=ie value=utf-8> <input type=hidden name=f value=8> <input type=hidden name=rsv_bp value=1> <input type=hidden name=rsv_idx value=1> <input type=hidden name=tn value=baidu><span class="bg s_ipt_wr"><input id=kw name=wd class=s_ipt value maxlength=255 autocomplete=off autofocus></span><span class="bg s_btn_wr"><input type=submit id=su value=百度一下 class="bg s_btn"></span> </form> </div> </div> <div id=u1> <a href=http://news.baidu.com name=tj_trnews class=mnav>新闻</a> <a href=http://www.hao123.com name=tj_trhao123 class=mnav>hao123</a> <a href=http://map.baidu.com name=tj_trmap class=mnav>地图</a> <a href=http://v.baidu.com name=tj_trvideo class=mnav>视频</a> <a href=http://tieba.baidu.com name=tj_trtieba class=mnav>贴吧</a> <noscript> <a href=http://www.baidu.com/bdorz/login.gif?login&amp;tpl=mn&amp;u=http%3A%2F%2Fwww.baidu.com%2f%3fbdorz_come%3d1 name=tj_login class=lb>登录</a> </noscript> <script>document.write('<a href="http://www.baidu.com/bdorz/login.gif?login&tpl=mn&u='+ encodeURIComponent(window.location.href+ (window.location.search === "" ? "?" : "&")+ "bdorz_come=1")+ '" name="tj_login" class="lb">登录</a>');</script> <a href=//www.baidu.com/more/ name=tj_briicon class=bri style="display: block;">更多产品</a> </div> </div> </div> <div id=ftCon> <div id=ftConw> <p id=lh> <a href=http://home.baidu.com>关于百度</a> <a href=http://ir.baidu.com>About Baidu</a> </p> <p id=cp>&copy;2017&nbsp;Baidu&nbsp;<a href=http://www.baidu.com/duty/>使用百度前必读</a>&nbsp; <a href=http://jianyi.baidu.com/ class=cp-feedback>意见反馈</a>&nbsp;京ICP证030173号&nbsp; <img src=//www.baidu.com/img/gs.gif> </p> </div> </div> </div> </body> </html>
+* Connection #0 to host 127.0.0.1 left intact
+* Closing connection 0
+```
+
+## 使用基于HTTP CONNECT的正向代理
+
+```go
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"net"
+	"net/http"
+	"net/url"
+)
+
+func createConn(urlString, proxyString string) (net.Conn, error) {
+	u, _ := url.Parse(urlString)
+	req := &http.Request{
+		Method: http.MethodConnect,
+		URL:    u,
+		Host:   u.Host,
+	}
+
+	conn, err := net.Dial("tcp", proxyString)
+	if err != nil {
+		return nil, err
+	}
+
+	err = req.Write(conn)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := http.ReadResponse(bufio.NewReader(conn), req)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("resp StatusCode err: %d", resp.StatusCode)
+	}
+	return conn, nil
+}
+
+func main() {
+	urlArr := []string{"http://www.baidu.com:80", "https://www.baidu.com:443", "http://www.baidu.com", "https://www.baidu.com"}
+	proxy := "127.0.0.1:3128"
+	for _, u := range urlArr {
+		_, err := createConn(u, proxy)
+		fmt.Println(u, err)
+	}
+}
+```
+
+- http://www.baidu.com:80
+- https://www.baidu.com:443
+- http://www.baidu.com
+- https://www.baidu.com
+
+必须要带port信息
 
 ## 参考
 
