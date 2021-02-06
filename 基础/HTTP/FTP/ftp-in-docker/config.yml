@@ -1,0 +1,10 @@
+ftpd:
+  bindings:
+    port: 4567
+httpd:
+  bindings:
+    port: 4600
+    auth_user_file: "auth_user_file.txt"
+data_provider:
+  drive: "sqlite"
+  name: "sftpgo.db"

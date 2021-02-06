@@ -24,13 +24,20 @@ tcpdump -i eth0 -n -v port 22 and host 192.168.0.111
 ```
 
 ```
-nohup tcpdump -i eth0 tcp port 1935 -W 40 -C 250 -w tcpdump_logfile 2>&1 > /dev/null &
+tcpdump -i eth0 tcp port 8080 -W 40 -C 250 -w tcpdump_logfile
 ```
 
 - `-W`: 保存文件个数
 - `-C`: 单个文件大小，单位是1^6Bytes
 
 保存下来的文件可以在wireshark中分析
+
+```
+tcpdump -i eth0 tcp port 8008 -G 600 -W 2880 -w tcpdump_%d%H%M
+```
+
+- `-G`:保存文件时长，单位秒
+- `-W`:保存文件个数
 
 ## case分析
 
@@ -235,6 +242,7 @@ go server主动断开连接
 - TCP/IP协议
 - [ASSIGNED NUMBERS](https://tools.ietf.org/html/rfc790)
 - [cksum incorrect](https://huataihuang.gitbooks.io/cloud-atlas/network/packet_analysis/tcpdump/udp_tcp_checksum_errors_from_tcpdump_nic_hardware_offloading.html)
+- [man tcpdump](https://www.tcpdump.org/manpages/tcpdump.1.html)
 
 **IP与TCP关系**
 

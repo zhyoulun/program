@@ -10,6 +10,10 @@
 
 ### 导入头文件
 
+需要配置include和lib!
+
+![](/static/images/2102/p001.png)
+
 ![](/static/images/2010/p003.png)
 
 ### 导入库文件
@@ -28,6 +32,24 @@
 
 ![](/static/images/2010/p009.png)
 
+```c
+//
+//  main.c
+//  HelloFFmpeg
+//
+//  Created by zhangyoulun on 2020/10/11.
+//
+
+#include <stdio.h>
+#include <libavcodec/avcodec.h>
+
+int main(int argc, const char * argv[]) {
+    // insert code here...
+    printf("Hello, World!\n");
+    printf("ffmpeg version = %s\n", av_version_info());
+    return 0;
+}
+```
 
 ## 参考
 
