@@ -8,9 +8,9 @@
 
 ![](/static/images/2010/p002.png)
 
-### 导入头文件
+### 设置头文件和库文件的位置
 
-需要配置include和lib!
+需要配置include和lib
 
 ![](/static/images/2102/p001.png)
 
@@ -33,15 +33,8 @@
 ![](/static/images/2010/p009.png)
 
 ```c
-//
-//  main.c
-//  HelloFFmpeg
-//
-//  Created by zhangyoulun on 2020/10/11.
-//
-
 #include <stdio.h>
-#include <libavcodec/avcodec.h>
+#include <libavutil/avutil.h>
 
 int main(int argc, const char * argv[]) {
     // insert code here...

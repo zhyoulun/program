@@ -18,3 +18,4 @@ ffmpeg转码的主要原理如下图所示：
 - 视频帧率从原来的23.98fps转换为15fps
 - 转码后的文件中不包含音频（-an参数）
 
+ffmpeg调用`libavformat`库（包含demuxers）读取输入的文件，从中获取packets containing encoded data。如果有多个输入文件，ffmpeg会尝试keep them synchronized by tracking lowest timestamp on any active input stream。
