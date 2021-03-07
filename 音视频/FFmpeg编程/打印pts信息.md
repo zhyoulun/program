@@ -198,3 +198,60 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 ```
+
+### 打印pts和dts
+
+```c
+#include <stdio.h>
+#include "libavformat/avformat.h"
+
+int main(int argc, const char * argv[]) {
+    char* url = "http://domain/app/stream.flv";
+    
+    //vars
+    AVFormatContext *pFormatCtx;
+    AVPacket *packet;
+    
+    //Initialize libavformat and register all the muxers, demuxers and protocols.
+    av_register_all();
+    //Do global initialization of network components.
+    avformat_network_init();
+    
+    pFormatCtx = avformat_alloc_context();
+    if(avformat_open_input(&pFormatCtx,url,NULL,NULL)!=0){
+        printf("Couldn't open input stream.\n");
+        return -1;
+    }
+    
+    //Read packets of a media file to get stream information.
+    if(avformat_find_stream_info(pFormatCtx,NULL)<0){
+        printf("Couldn't find stream information.\n");
+        return -1;
+    }
+    
+    int video_stream_index = -1;
+    for(int i=0;i<pFormatCtx->nb_streams;i++){
+        if(pFormatCtx->streams[i]->codec->codec_type==AVMEDIA_TYPE_VIDEO){
+            video_stream_index = i;
+            break;
+        }
+    }
+    printf("video stream index: %d\n", video_stream_index);
+    
+    packet = (AVPacket*)av_malloc(sizeof(AVPacket));
+    
+    
+    while(av_read_frame(pFormatCtx, packet)>=0){
+        if(packet->stream_index==video_stream_index){
+            printf("dts: %d, pts: %d\n", packet->dts, packet->pts);
+        }
+        
+        av_free_packet(packet);
+    }
+    
+    //close
+    avformat_close_input(&pFormatCtx);
+    
+    return 0;
+}
+```
