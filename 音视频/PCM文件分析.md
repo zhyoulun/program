@@ -16,7 +16,7 @@
 
 **使用hexfiend**
 
-http://ridiculousfish.com/hexfiend/
+https://hexfiend.com/
 
 **使用xcode**
 
