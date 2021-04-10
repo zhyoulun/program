@@ -32,6 +32,14 @@ Unix下可用的5种I/O模型的基本区别：
 
 ![](/static/images/2006/p025.png)
 
+当用户进程调用了select，那么整个进程会被block；kernel会“监视”所有select负责的socket，当任何一个socket中的数据准备好了，select就会返回。这个时候用户进程再调用read操作，将数据从kernel拷贝到用户进程。
+
+在我理解，多路复用就是可以在一个线程中监测多个套接字，比如select，poll，epoll，当这些套接字（文件描述符）中的任意一个进入有数据到来，以上三个函数就会返回，之后进入数据处理状态。
+
+这个图和blocking IO的图其实并没有太大的不同，事实上，还更差一些。因为这里需要使用两个system call (select 和 recvfrom)，而blocking IO只调用了一个system call (recvfrom)。但是，用select的优势在于它可以同时处理多个connection。所以，如果处理的连接数不是很高的话，使用select/epoll的web server不一定比使用multi-threading + blocking IO的web server性能更好，可能延迟还更大。select/epoll的优势并不是对于单个连接能处理得更快，而是在于能处理更多的连接。
+
+实际中，对于每一个socket，一般都设置成为non-blocking，但是，如上图所示，整个用户的process其实是一直被block的。只不过process是被select这个函数block，而不是被socket IO给block。
+
 ## 信号驱动式I/O（SIGIO）
 
 ![](/static/images/2006/p026.png)
@@ -49,3 +57,8 @@ Unix下可用的5种I/O模型的基本区别：
 ## 各种I/O模型的比较
 
 ![](/static/images/2006/p028.png)
+
+## 参考
+
+- [linux select函数解析以及事例](https://zhuanlan.zhihu.com/p/57518857)
+- [Linux IO模式及 select、poll、epoll详解](https://segmentfault.com/a/1190000003063859)
