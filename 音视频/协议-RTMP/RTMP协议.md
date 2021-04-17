@@ -4,7 +4,7 @@
 
 ### 概述
 
-> the format of a message that can be split into chunks to support multiplexing depends on a higher level protocol. the message format should however contain the following fields which are nescessary for creating the chunks. 
+> the format of a message that can be split into chunks to support multiplexing depends on a higher level protocol. the message format should however contain the following fields which are nescessary for creating the chunks.
 
 - timestamp: message的timestamp
 - length: message playload的长度
@@ -62,7 +62,7 @@ rtmp chunk stream使用message type IDs 1,2,3,5,6 作为协议控制消息。这
 - window acknowledgement size(5): 客户端和服务端发送这个消息，用于向对端通知window size（用于发送应答消息）
 - set peer bandwidth(6): 客户端和服务端发送这个消息，用于通知对端限制输出带宽。
 
-## rtmp command message
+## 不同类型的rtmp message
 
 - command message
     - message type=20 for AMF0
@@ -82,127 +82,186 @@ rtmp chunk stream使用message type IDs 1,2,3,5,6 作为协议控制消息。这
 - user control message events
 
 
-type of commands
+## type of commands
 
-- NetConnection
-    - connect: 客户端发送该命令到服务端
-        - command structure(from client to server):
-            - command name
-            - transacation
-            - command object
-                - app
-                - flashver
-                - swfUrl
-                - tcUrl
-                - fpad
-                - audioCodecs
-                    - SUPPORT_SND_NONE
-                    - SUPPORT_SND_ADPCM
-                    - SUPPORT_SND_MP3
-                    - SUPPORT_SND_INTEL
-                    - SUPPORT_SND_UNUSED
-                    - SUPPORT_SND_NELLY8
-                    - SUPPORT_SND_NELLY
-                    - SUPPORT_SND_G711A
-                    - SUPPORT_SND_G711U
-                    - SUPPORT_SND_NELLY16
-                    - SUPPORT_SND_AAC
-                    - SUPPORT_SND_SPEEX
-                    - SUPPORT_SND_ALL
-                - videoCodecs
-                    - SUPPORT_VID_UNUSED
-                    - SUPPORT_VID_JPEG
-                    - SUPPORT_VID_SORENSON
-                    - SUPPORT_VID_HOMEBREW
-                    - SUPPORT_VID_VP6(On2)
-                    - SUPPORT_VID_VP6ALPHA
-                    - SUPPORT_VID_HOMEBREWV
-                    - SUPPORT_VID_H264
-                    - SUPPORT_VID_ALL
-                - videoFunction
-                    - SUPPORT_VID_CLIENT_SEEK
-                - pageUrl
-                - objectEncoding
-                    - AMF0
-                    - AMF3
-            - optional user arguments
-        - command structure(from server to client):
-            - command name
-            - transacation id
-            - properties
-            - information
-    - Call
-        - command structure(from sender to receiver):
-            - Procedure Name
-            - Transacation id
-            - command object
-            - optional argument
-        - command structure(response):
-            - command name
-            - transacation id
-            - command object
-            - response
-    - createStream
-        - command structure(from client to server):
-            - command name
-            - transacation id
-            - command object
-        - command structure(from server to client):
-            - command name
-            - transacation id
-            - command object
-            - stream id
-- NetStream
-    - from client to server:
-        - play
-            - command name
-            - transacation id
-            - command object
-            - stream name
-            - start
-            - duration
-            - reset
-        - play2
-            - command name
-            - transacation id
-            - command object
-            - parameters
-        - deleteStream
-            - command name
-            - transacation id
-            - command object
-            - stream id
-        - closeStream
-        - receiveAudio
-            - command name
-            - transacation id
-            - command object
-            - bool flag
-        - receiveVideo
-            - command name
-            - transacation id
-            - command object
-            - bool flag
-        - publish
-            - command name
-            - transacation id
-            - command object
-            - publishing name
-            - publishing type
-        - seek
-            - command name
-            - transacation id
-            - command object
-            - milliSeconds
-        - pause
-            - command name
-            - transacation id
-            - command object
-            - pause/unpause flag
-            - milliSeconds
-    - from server to client:
-        - onStatus
-            - command name
-            - transacation id
-            - command object
-            - info object
+### NetConnection
+
+#### connect
+
+connect表示连接对端，对端如果同意连接的话会记录发送端信息并返回连接成功消息
+
+- command structure(from client to server):
+    - command name
+    - transacation
+    - command object
+        - app
+        - flashver
+        - swfUrl
+        - tcUrl
+        - fpad
+        - audioCodecs
+            - SUPPORT_SND_NONE
+            - SUPPORT_SND_ADPCM
+            - SUPPORT_SND_MP3
+            - SUPPORT_SND_INTEL
+            - SUPPORT_SND_UNUSED
+            - SUPPORT_SND_NELLY8
+            - SUPPORT_SND_NELLY
+            - SUPPORT_SND_G711A
+            - SUPPORT_SND_G711U
+            - SUPPORT_SND_NELLY16
+            - SUPPORT_SND_AAC
+            - SUPPORT_SND_SPEEX
+            - SUPPORT_SND_ALL
+        - videoCodecs
+            - SUPPORT_VID_UNUSED
+            - SUPPORT_VID_JPEG
+            - SUPPORT_VID_SORENSON
+            - SUPPORT_VID_HOMEBREW
+            - SUPPORT_VID_VP6(On2)
+            - SUPPORT_VID_VP6ALPHA
+            - SUPPORT_VID_HOMEBREWV
+            - SUPPORT_VID_H264
+            - SUPPORT_VID_ALL
+        - videoFunction
+            - SUPPORT_VID_CLIENT_SEEK
+        - pageUrl
+        - objectEncoding
+            - AMF0
+            - AMF3
+    - optional user arguments
+- command structure(from server to client):
+    - command name
+    - transacation id
+    - properties
+    - information
+
+
+#### Call
+
+用于在对端执行某函数，即常说的RPC：远程进程调用
+
+- command structure(from sender to receiver):
+    - Procedure Name
+    - Transacation id
+    - command object
+    - optional argument
+- command structure(response):
+    - command name
+    - transacation id
+    - command object
+    - response
+
+#### createStream
+
+创建传递具体信息的通道，从而可以在这个流中传递具体信息，传输信息单元为Chunk
+
+- command structure(from client to server):
+    - command name
+    - transacation id
+    - command object
+- command structure(from server to client):
+    - command name
+    - transacation id
+    - command object
+        - stream id
+
+### NetStream, from client to server:
+
+Netstream建立在NetConnection之上，通过NetConnection的createStream命令创建，用于传输具体的音频、视频等信息。
+
+在传输层协议之上只能连接一个NetConnection，但一个NetConnection可以建立多个NetStream来建立不同的流通道传输数据。
+
+#### play
+
+由客户端向服务器发起请求从服务器端接受数据（如果传输的信息是视频的话就是请求开始播流），可以多次调用，这样本地就会形成一组数据流的接收者。注意其中有一个reset字段，表示是覆盖之前的播流（设为true）还是重新开始一路播放（设为false）
+
+- command name
+- transacation id
+- command object
+- stream name
+- start
+- duration
+- reset
+
+#### play2
+
+和上面的play命令不同的是，play2命令可以将当前正在播放的流切换到同样数据但不同比特率的流上，服务器端会维护多种比特率的文件来供客户端使用play2命令来切换。
+
+- command name
+- transacation id
+- command object
+- parameters
+
+#### deleteStream
+
+删除流，用于客户端告知服务器端本地的某个流对象已被删除，不需要再传输此路流
+
+- command name
+- transacation id
+- command object
+- stream id
+
+#### closeStream
+
+#### receiveAudio
+
+通知服务器端该客户端是否要发送音频
+
+- command name
+- transacation id
+- command object
+- bool flag
+
+#### receiveVideo
+
+通知服务器端该客户端是否要发送视频
+
+- command name
+- transacation id
+- command object
+- bool flag
+
+#### publish
+
+publish表示开始向对方推流，接受端接到命令后准备好接受对端发送的流信息
+
+- command name
+- transacation id
+- command object
+- publishing name
+- publishing type
+
+#### seek
+
+定位到视频或音频的某个位置，以毫秒为单位。
+
+- command name
+- transacation id
+- command object
+- milliSeconds
+
+#### pause
+
+客户端告知服务端停止或恢复播放。
+
+- command name
+- transacation id
+- command object
+- pause/unpause flag
+- milliSeconds
+
+
+### NetStream, from server to client
+
+#### onStatus
+
+- command name
+- transacation id
+- command object
+- info object
+
+
+## 参考
+
+- [带你吃透RTMP](https://mingyangshang.github.io/2016/03/06/RTMP%E5%8D%8F%E8%AE%AE/)
