@@ -1,8 +1,8 @@
-## 正文
+# kubectl用法
 
-### rc
+## rc(ReplicationController)
 
-获取rc列表
+### 获取rc列表
 
 ```bash
 ➜  ~ kubectl get rc
@@ -12,7 +12,7 @@ nginx   1         1         1       5m57s
 redis   1         1         1       3m9s
 ```
 
-获取指定的rc
+### 获取指定的rc
 
 ```bash
 ➜  ~ kubectl get rc redis
@@ -20,7 +20,7 @@ NAME    DESIRED   CURRENT   READY   AGE
 redis   1         1         1       3m12s
 ```
 
-查看指定的rc信息
+### 查看指定的rc信息
 
 ```bash
 ➜  ~ kubectl describe rc mysql
@@ -45,22 +45,22 @@ Pod Template:
 Events:                     <none>
 ```
 
-创建一个rc
+### 创建一个rc
 
 ```bash
 kubectl create -f redis-rc.yaml
 ```
 
-删除一个rc
+### 删除一个rc
 
 ```bash
 ➜  ~ kubectl delete rc mysql
 replicationcontroller "mysql" deleted
 ```
 
-### pod
+## pod
 
-获取pod列表
+### 获取pod列表
 
 ```bash
 ➜  ~ kubectl get pod
@@ -71,7 +71,7 @@ nginx-2dnmv                   1/1     Running   0          6m51s
 redis-zqkgn                   1/1     Running   0          4m3s
 ```
 
-获取指定的pod
+### 获取指定的pod
 
 ```bash
 ➜  ~ kubectl get pod mysql-dnvpp
@@ -79,7 +79,7 @@ NAME          READY   STATUS    RESTARTS   AGE
 mysql-dnvpp   1/1     Running   0          87m
 ```
 
-查询指定的pod信息
+### 查询指定的pod信息
 
 ```bash
 ➜  ~ kubectl describe pod redis-zqkgn
@@ -134,28 +134,30 @@ Events:
   Normal  Started    6m28s  kubelet            Started container redis
 ```
 
-删除一个pod（因为rc的存在，删除pod后，还会重新再创建一个）
+### 删除一个pod
+
+因为rc的存在，删除pod后，还会重新再创建一个
 
 ```bash
 ➜  ~ kubectl delete pod redis-zqkgn
 pod "redis-zqkgn" deleted
 ```
 
-登录pod
+### 登录pod
 
 ```bash
 kubectl exec -it shell-demo -- /bin/bash
 ```
 
-### svc
+## svc(service)
 
-创建service
+### 创建service
 
 ```bash
 kubectl create -f myweb-svc.yaml
 ```
 
-获取service列表
+### 获取service列表
 
 ```bash
 ➜  ~ kubectl get svc
@@ -166,7 +168,7 @@ mysql        ClusterIP      10.99.16.3       <none>        3306/TCP         10m
 myweb        NodePort       10.111.207.113   <none>        8080:30001/TCP   10m
 ```
 
-获取指定的service信息
+### 获取指定的service信息
 
 ```bash
 ➜  ~ kubectl get svc mysql
@@ -174,7 +176,7 @@ NAME    TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)    AGE
 mysql   ClusterIP   10.99.16.3   <none>        3306/TCP   10m
 ```
 
-查询service信息
+### 查询service信息
 
 ```bash
 ➜  ~ kubectl describe svc mysql
@@ -192,6 +194,21 @@ Session Affinity:  None
 Events:            <none>
 ```
 
+## deployment
+
+缩写是deploy
+
+### 更新deployment
+
+```
+kubectl edit deployment/nginx-deployment
+```
+
+保存之后就会触发
+
+
+
 ## 参考
 
 - [获取正在运行容器的 Shell](https://kubernetes.io/zh/docs/tasks/debug-application-cluster/get-shell-running-container/)
+- https://kubernetes.io/zh/docs/concepts/workloads/controllers/deployment/

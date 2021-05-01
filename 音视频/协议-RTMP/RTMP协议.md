@@ -1,5 +1,9 @@
 ![](/static/images/2102/p007.png)
 
+## chunk stream
+
+- 每个chunk stream传输一种类型的message
+
 ## message format
 
 ### 概述
@@ -27,9 +31,9 @@ rtmp message format:
 - chunk header
     - basic header(1B,2B,3B)
         - chunk stream ID: id范围3~65599，0,1,2是保留的: 0代表2B格式，1代表3B格式，2是低版本的一个保留值
-            - 1B: id范围2~63
-            - 2B: id范围64~319(0~255,+64)
-            - 3B: id范围64~65599(0~65535,+64)
+            - 1B: id范围`2~63`
+            - 2B: id范围`64~319(0~255,+64)`
+            - 3B: id范围`64~65599(0~65535,+64)`
         - chunk type/fmt(2bit)：用来决定message header的format
     - message header(0B,3B,7B,11B)
         - type0(11B): 用于一个chunk stream的开头，以及当stream timestamp goes backward
@@ -79,7 +83,7 @@ rtmp chunk stream使用message type IDs 1,2,3,5,6 作为协议控制消息。这
     - message type=9
 - aggregate message
     - message type=22
-- user control message events
+- user control message events(4)
 
 
 ## type of commands
