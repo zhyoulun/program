@@ -2,11 +2,12 @@
 
 安装qemu
 
-```
-brew install qemu
-```
+- mac：`brew install qemu`
+- linux：`apt install qemu`
 
-创建磁盘
+
+
+创建磁盘，生成文件ubuntu.img
 
 ```
 qemu-img create -f qcow2 ubuntu.img 10G
@@ -15,7 +16,7 @@ qemu-img create -f qcow2 ubuntu.img 10G
 启动虚拟机安装操作系统
 
 ```
-qemu-system-x86_64 -m 2G -machine accel=hvf ubuntu.img -cdrom ~/Documents/软件备份/iso/ubuntu-16.04.7-server-amd64.iso
+qemu-system-x86_64 -m 2G -machine accel=hvf ubuntu.img -cdrom ~/Documents/软件备份/iso/ubuntu-18.04.5-live-server-amd64.iso
 ```
 
 启动虚拟机
