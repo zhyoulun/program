@@ -1,0 +1,3 @@
+- ngx_slab_max_size = ngx_pagesize / 2
+- ngx_slab_exact_size = ngx_pagesize / (8 * sizeof(uintptr_t));
+- ngx_slab_exact_shift：`for (n = ngx_slab_exact_size; n >>= 1; ngx_slab_exact_shift++){}`

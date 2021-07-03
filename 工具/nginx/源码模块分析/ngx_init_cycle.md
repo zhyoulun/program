@@ -1,0 +1,59 @@
+- stage 1
+  - pool = ngx_create_pool(NGX_CYCLE_POOL_SIZE, log)
+  - pool->log = old_cycle->log
+- stage 2
+  - cycle = ngx_pcalloc(pool, sizeof(ngx_cycle_t))
+  - cycle->pool = pool
+  - cycle->log = old_cycle->log
+  - cycle->old_cyle = old_cycle
+  - cycle->conf_prefix = old_cycle->conf_prefix
+  - cycle->prefix = old_cycle->prefix
+  - cycle->conf_file = old_cycle->conf_file
+  - cycle->conf_param = old_cycle->conf_param
+  - cycle->paths 初始化数组
+  - cycle->config_dump 初始化数组
+  - ngx_rbtree_init(&cycle->config_dump_rbtree, &cycle->config_dump_sentinel ngx_str_rbtree_insert_value);
+  - cycle->open_files 初始化list
+  - cycle->shared_memory 初始化list
+  - cycle->listening 初始化数组
+  - cycle->reusable_connections_queue 初始化队列
+  - cycle->conf_ctx 初始化
+  - cycle->hostname 初始化
+  - ngx_cycle_modules(cycle)
+    - cycle->modules = ngx_modules
+  - 遍历所有cycle->modules中的NGX_CORE_MODULE
+    - `rv = module[i]->ctx->create_conf(cycle)`：调用核心模块的 create_conf 函数，创建实际的配置信息存储空间并初始化该配置信息结构体 
+    - `cycle->conf_ctx[cycle->modules[i]->index] = rv`：将返回的配置信息结构体保存到该核心模块在 cycle->conf_ctx 数组对应下标处
+- stage 3
+  - 初始化conf
+  - conf.args 初始化数组
+  - conf.temp_pool 初始化pool
+  - conf.ctx = cycle->conf_ctx
+  - conf.cycle = cycle
+  - conf.pool = pool
+  - conf.log = old_cycle.log
+  - conf.module_type = NGX_CORE_MODULE;
+  - conf.cmd_type = NGX_MAIN_CONF
+  - ngx_conf_param(&conf)？？
+  - ngx_conf_parse(&conf, &cycle->conf_file)
+- stage 4
+  - 遍历所有cycle->modules中的NGX_CORE_MODULE
+    - `module[i]->ctx->init_conf(cycle, cycle->conf_ctx[cycle->modules[i]->index]`：是用于对上面解析完配置文件后对用户没有设置的核心模块配置指令设置默认值
+- stage 5
+  - ccf = (ngx_core_conf_t *) ngx_get_conf(cycle->conf_ctx, ngx_core_module)
+  - ngx_test_lockfile(cycle->lock_file.data, log)
+  - ngx_create_paths(cycle, ccf->user)
+  - ngx_log_open_default(cycle)
+  - cycle->log = &cycle->new_log
+  - pool->log = &cycle->new_log
+  - 初始化cycle->shared_memory
+  - cycle->listening 初始化
+  - ngx_open_listening_sockets(cycle)
+  - pool->log = cycle->log;
+  - ngx_init_modules(cycle)
+    - 遍历所有的cycle->modules的init_module方法
+      - `cycle->modules[i]->init_module(cycle)`
+- stage 6
+  - old_cycle->shared_memory 清理
+  - old_cycle->listening 清理
+  - old_cycle->open_files 清理
