@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: mysql
-        image: 1jdlp79a.mirror.aliyuncs.com/library/mysql:latest
+        image: mysql
         ports:
         - containerPort: 3306
         env:
